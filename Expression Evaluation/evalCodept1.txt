@@ -1,0 +1,108 @@
+String newExpr = expr.replaceAll(" ", "");
+        Stack<String> operators = new Stack<String>();
+        Stack<Float> numbers = new Stack<Float>();
+        StringTokenizer st = new StringTokenizer(newExpr, delims, true);
+        int index = 0;
+        int lastIndex = newExpr.length() - 1;
+        while(st.hasMoreTokens()) {
+            String s = st.nextToken();
+            if(Character.isDigit(s.charAt(0))){
+                numbers.push(Float.parseFloat(s));
+                index = newExpr.indexOf(s) + s.length();
+                if(!(operators.isEmpty())) {
+                    if(operators.peek().equals("*") || operators.peek().equals("/")) {
+                        float v2 = numbers.pop();
+                        float v1 = numbers.pop();
+                        String op = operators.pop();
+                        if(op.equals("*")) {
+                            numbers.push(v1*v2);
+                        }else {
+                            numbers.push(v1/v2);
+                        }
+                    }
+                }
+            }else if(s.equals("+") || s.equals("-") || s.equals("/") || s.equals("*")){
+                    operators.push(s);
+                index = newExpr.indexOf(s, index)+s.length();
+            }else if(s.equals("(")) {
+                numbers.push(evaluate(newExpr.substring(newExpr.indexOf(s, index) + 1, newExpr.lastIndexOf(")")), vars, arrays));
+                index = newExpr.indexOf(s, index) + s.length();
+                while(!(s.equals(newExpr.substring(newExpr.lastIndexOf(")", lastIndex), newExpr.lastIndexOf(")", lastIndex)+1)))) {
+                    s = st.nextToken();
+                }
+                if(!(operators.isEmpty())) {
+                    if(operators.peek().equals("*") || operators.peek().equals("/")) {
+                        float v2 = numbers.pop();
+                        float v1 = numbers.pop();
+                        String op = operators.pop();
+                        if(op.equals("*")) {
+                            numbers.push(v1*v2);
+                        }else {
+                            numbers.push(v1/v2);
+                        }
+                    }
+                }
+            }else if(s.equals(")") || s.equals("]")) {
+                break;
+            }else if((newExpr.indexOf(s, index) + s.length() < newExpr.length()) && newExpr.charAt(newExpr.indexOf(s, index) + s.length()) == '[') {
+                    Array a = new Array(s);
+                    int beginIndex = newExpr.indexOf("[", index) + 1;
+                    int endIndex = newExpr.lastIndexOf("]") + 1;
+                    numbers.push((float)arrays.get(arrays.indexOf(a)).values[(int)evaluate(newExpr.substring(beginIndex, endIndex), vars, arrays)]);
+                    index = newExpr.indexOf(s, index) + s.length();
+                    while(!(s.equals(newExpr.substring(newExpr.lastIndexOf("]"), newExpr.lastIndexOf("]")+1)))) {
+                        s = st.nextToken();
+                    }
+                    if(!(operators.isEmpty())) {
+                        if(operators.peek().equals("*") || operators.peek().equals("/")) {
+                            float v2 = numbers.pop();
+                            float v1 = numbers.pop();
+                            String op = operators.pop();
+                            if(op.equals("*")) {
+                                numbers.push(v1*v2);
+                            }else {
+                                numbers.push(v1/v2);
+                            }
+                        }
+                    }
+                }else {
+                    Variable t = new Variable(s);
+                    numbers.push((float)vars.get(vars.indexOf(t)).value);
+                    index = newExpr.indexOf(s, index) + s.length();
+                    if(!(operators.isEmpty())) {
+                        if(operators.peek().equals("*") || operators.peek().equals("/")) {
+                            float v2 = numbers.pop();
+                            float v1 = numbers.pop();
+                            String op = operators.pop();
+                            if(op.equals("*")) {
+                                numbers.push(v1*v2);
+                            }else {
+                                numbers.push(v1/v2);
+                            }
+                        }
+                    }
+                }
+            }
+        Stack<String> revop = new Stack<String>();
+        Stack<Float> revnum = new Stack<Float>();
+        while(!(operators.isEmpty())) {
+            revop.push(operators.pop());
+        }
+        while(!(numbers.isEmpty())) {
+            revnum.push(numbers.pop());
+        }
+        while(!(revop.isEmpty())) {
+            float v1 = revnum.pop();
+            float v2 = revnum.pop();
+            String op = revop.pop();
+            if(op.equals("+")) {
+                revnum.push(v1 + v2);
+            }else if(op.equals("-")) {
+                revnum.push(v1-v2);
+            }else if(op.equals("*")) {
+                revnum.push(v1*v2);
+            }else {
+                revnum.push(v1/v2);
+            }
+        }
+        return revnum.pop();
